@@ -104,6 +104,7 @@ void resizeFunc(int width, int height);
 void idleFunc();
 void keyboardFunc(unsigned char key, int x, int y);
 void mouseFunc(int button, int state, int x, int y);
+void mouseMotionFunc(int x, int y);
 
 //Funciones de inicialización y destrucción
 void initContext(int argc, char** argv);
@@ -163,6 +164,7 @@ void initContext(int argc, char** argv) {
 	glutIdleFunc(idleFunc);
 	glutKeyboardFunc(keyboardFunc);
 	glutMouseFunc(mouseFunc);
+	glutMotionFunc(mouseMotionFunc);
 
 }
 
@@ -314,11 +316,12 @@ void initObj() {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
 	//////////////////////////////////////////////////////	PYRAMID	//////////////////////////////////////////////////////	
-	/*//Configuración de los Vertex Buffer Objects
+	/*
+	//Configuración de los Vertex Buffer Objects
 	glGenBuffers(1, &posVBO2);
 	glGenBuffers(1, &colorVBO2);
 	glGenBuffers(1, &normalVBO2);
-	glGenBuffers(1, &texCoordVBO);
+	glGenBuffers(1, &texCoordVBO2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, posVBO2);
 	glBufferData(GL_ARRAY_BUFFER, pyramidNVertex * sizeof(float) * 3, pyramidVertexPos, GL_STATIC_DRAW);
@@ -493,7 +496,8 @@ void renderFunc() {
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
 	///////////////////////////////////////////////	PYRAMID //////////////////////////////////////////////
-	/*//Se crean las matrices modelView, modelViewProjection y normal
+	/*
+	//Se crean las matrices modelView, modelViewProjection y normal
 	modelView = view * model_pyramid;
 	modelViewProj = proj * modelView;
 	normal = glm::transpose(glm::inverse(modelView));
@@ -630,6 +634,11 @@ void idleFunc() {
 	glm::mat4 model_box3_translate = glm::translate(model_box3, punto_bezier_curva);
 	model_box3 = model_box3_translate;
 
+	model_pyramid = glm::mat4(1.0f);
+	glm::mat4 pyramid_rotate = glm::rotate(model_pyramid, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 pyramid_translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 3.0f, 0.0f));
+	model_pyramid = pyramid_rotate * pyramid_translate;
+
 	glutPostRedisplay();
 
 }
@@ -754,6 +763,10 @@ void keyboardFunc(unsigned char key, int x, int y) {
 
 void mouseFunc(int button, int state, int x, int y) {
 
+}
+
+void mouseMotionFunc(int x, int y) {
+
 	glm::mat4 camera_orbit = glm::mat4(1.0f);
 	//Inicializar estado actual de cámara (traslación)
 	camera_orbit[3].x = cameraX;
@@ -787,6 +800,8 @@ void mouseFunc(int button, int state, int x, int y) {
 	glutPostRedisplay();
 
 }
+
+
 
 
 

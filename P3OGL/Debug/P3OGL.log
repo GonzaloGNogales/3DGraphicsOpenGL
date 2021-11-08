@@ -1,6 +1,12 @@
 ﻿cl : línea de comandos warning D9035: La opción 'Gm' está desusada y se quitará en próximas versiones
   main.cpp
-  auxiliar.cpp
-  Generando código...
-auxiliar.obj : warning LNK4075: se omite '/EDITANDCONTINUE' debido a la especificación '/SAFESEH'
-  P3OGL.vcxproj -> C:\Users\gonza\OneDrive\Escritorio\Computer Science\MIGJRV\1 CUATRI\G3D\Practica III\workbench raiz Ana\P3OGL\P3OGL\Debug\P3OGL.exe
+C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(576,22): warning C4244: '=': conversión de 'double' a 'T'; posible pérdida de datos
+          with
+          [
+              T=float
+          ]
+C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(648,27): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(650,27): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(782,15): warning C4244: 'inicializando': conversión de 'int' a 'float'; posible pérdida de datos
+C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(783,15): warning C4244: 'inicializando': conversión de 'int' a 'float'; posible pérdida de datos
+  P3OGL.vcxproj -> C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\Debug\P3OGL.exe

@@ -1,3 +1,4 @@
 C:\Users\gonza\OneDrive\Escritorio\PRAC 3 G3D WORKBENCH\P3OGL\P3OGL\Debug\P3OGL.exe
 C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\P3OGL\P3OGL\P3OGL\Debug\P3OGL.exe
 C:\Users\gonza\OneDrive\Escritorio\Computer Science\MIGJRV\1 CUATRI\G3D\Practica III\workbench raiz Ana\P3OGL\P3OGL\Debug\P3OGL.exe
+C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\Debug\P3OGL.exe
