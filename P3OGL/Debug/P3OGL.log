@@ -1,12 +1,12 @@
 ﻿cl : línea de comandos warning D9035: La opción 'Gm' está desusada y se quitará en próximas versiones
   main.cpp
-C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(571,22): warning C4244: '=': conversión de 'double' a 'T'; posible pérdida de datos
+C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(553,22): warning C4244: '=': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(642,27): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(644,27): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(776,15): warning C4244: 'inicializando': conversión de 'int' a 'float'; posible pérdida de datos
-C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(777,15): warning C4244: 'inicializando': conversión de 'int' a 'float'; posible pérdida de datos
+C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(624,27): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(626,27): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(758,15): warning C4244: 'inicializando': conversión de 'int' a 'float'; posible pérdida de datos
+C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\scr\main.cpp(759,15): warning C4244: 'inicializando': conversión de 'int' a 'float'; posible pérdida de datos
   P3OGL.vcxproj -> C:\Users\shyki\OneDrive\Escritorio\AnaBelenFM\Máster  URJC\Primer semestre\GRÁFICOS 3D\Bloque III Prácticas\Práctica III - OpenGL\Solución de la práctica\3DGraphicsOpenGL\P3OGL\Debug\P3OGL.exe
