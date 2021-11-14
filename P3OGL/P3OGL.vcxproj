@@ -23,6 +23,8 @@
     <None Include="..\shaders_P3\shader.v0.vert" />
     <None Include="..\shaders_P3\shader.v1.frag" />
     <None Include="..\shaders_P3\shader.v1.vert" />
+    <None Include="..\shaders_P3\shader.v2.frag" />
+    <None Include="..\shaders_P3\shader.v2.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>P3OGL</ProjectName>

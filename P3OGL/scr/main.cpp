@@ -18,6 +18,10 @@
 // Datos que se almacenan en la memoria de la CPU
 //////////////////////////////////////////////////////////////
 
+//Constantes
+const int numProgram = 2;
+const int numObjects = 2;
+
 const float ORBIT_RADIUS = 10.0f;
 float bezier_t = 0.0f;
 
@@ -39,19 +43,26 @@ glm::vec3 right = glm::vec3(-10.0f, 0.0f, -10.0f);
 //////////////////////////////////////////////////////////////
 
 //Variables manejadoras (Handlers de los shaders y el programa "linker" entre vert y frag)
-unsigned int vshader;
-unsigned int fshader;
-unsigned int program;
+// El primer programa no usa luces ni texturas, pero aun así la uniform será un vector por si se quiere modificar
+unsigned int vshader[numProgram];
+unsigned int fshader[numProgram];
+unsigned int program[numProgram];
 
 //Variables Uniform 
-int uModelViewMat;
-int uModelViewProjMat;
-int uNormalMat;
-int uModel;
+int uModelViewMat[numProgram];
+int uModelViewProjMat[numProgram];
+int uNormalMat[numProgram];
+int uModel[numProgram];
 
 //Texturas Uniform
-int uColorTex;
-int uEmiTex;
+int uColorTex[numProgram];
+int uEmiTex[numProgram];
+
+//Luces Uniform
+unsigned int uLightPosition[numProgram];
+glm::vec3 lightPosition = glm::vec3(0.0f);
+unsigned int uLightIntensity[numProgram];
+glm::vec3 lightIntensity = glm::vec3(1.0);	// == diffusa
 
 //Atributos 
 int inPos;
@@ -63,14 +74,9 @@ int inTexCoord;
 unsigned int colorTexId;
 unsigned int emiTexId;
 
-//Lights
-unsigned int uLightPosition;
-glm::vec3 lightPosition = glm::vec3(0.0f);
-unsigned int uLightIntensity;
-glm::vec3 lightIntensity = glm::vec3(1.0);	// == diffusa
 
 //VAO punto medio entre atributos y datos del VBO
-unsigned int vao;
+unsigned int vao[numObjects];
 
 //VBOs que forman parte del objeto 
 unsigned int posVBO;
@@ -78,15 +84,6 @@ unsigned int colorVBO;
 unsigned int normalVBO;
 unsigned int texCoordVBO;
 unsigned int triangleIndexVBO;
-
-//PYRAMID
-/*
-unsigned int posVBO2;
-unsigned int colorVBO2;
-unsigned int normalVBO2;
-unsigned int texCoordVBO2;
-unsigned int triangleIndexVBO2;
-*/
 
 //Ancho y alto de la ventana
 int w, h;
@@ -109,7 +106,7 @@ void mouseMotionFunc(int x, int y);
 //Funciones de inicialización y destrucción
 void initContext(int argc, char** argv);
 void initOGL();
-void initShader(const char* vname, const char* fname);
+void initShader(const char* vname, const char* fname, int program_i, unsigned int& vshader, unsigned int& fshader);
 void initObj();
 void destroy();
 
@@ -127,7 +124,19 @@ int main(int argc, char** argv) {
 
 	initContext(argc, argv);
 	initOGL();
-	initShader("../shaders_P3/shader.v1.vert", "../shaders_P3/shader.v1.frag");
+
+	//Inicializamos los shaders enlazandolos con el programa correspondiente
+	for (int p = 0; p < numProgram; p++) {
+
+		if (p == 0) {
+			initShader("../shaders_P3/shader.v1.vert", "../shaders_P3/shader.v1.frag", p, vshader[p], fshader[p]);
+		}
+		else {
+			initShader("../shaders_P3/shader.v2.vert", "../shaders_P3/shader.v2.frag", p, vshader[p], fshader[p]);
+		}
+
+	}
+
 	initObj();
 
 	glutMainLoop();
@@ -186,57 +195,54 @@ void initOGL() {
 
 void destroy() {
 
-	glDetachShader(program, vshader);
-	glDetachShader(program, fshader);
-	glDeleteShader(vshader);
-	glDeleteShader(fshader);
-	glDeleteProgram(program);
+	for (int p = 0; p < numProgram; p++) {
+
+		glDetachShader(program[p], vshader[p]);
+		glDetachShader(program[p], fshader[p]);
+		glDeleteShader(vshader[p]);
+		glDeleteShader(fshader[p]);
+		glDeleteProgram(program[p]);
+
+	}
 	glDeleteBuffers(1, &posVBO);
 	glDeleteBuffers(1, &colorVBO);
 	glDeleteBuffers(1, &normalVBO);
 	glDeleteBuffers(1, &texCoordVBO);
 	glDeleteBuffers(1, &triangleIndexVBO);
-	
-	//PYRAMID
-	/*
-	glDeleteBuffers(1, &posVBO2);
-	glDeleteBuffers(1, &colorVBO2);
-	glDeleteBuffers(1, &normalVBO2);
-	glDeleteBuffers(1, &texCoordVBO2);
-	glDeleteBuffers(1, &triangleIndexVBO2);
-	*/
 
-	glDeleteVertexArrays(1, &vao);
+	for (int v = 0; v < numObjects; v++) {
+		glDeleteVertexArrays(1, &vao[v]);
+	}
 	glDeleteTextures(1, &colorTexId);
 	glDeleteTextures(1, &emiTexId);
 
 }
 
-void initShader(const char* vname, const char* fname) {
+void initShader(const char* vname, const char* fname, int program_i, unsigned int& vshader, unsigned int& fshader) {
 
 	//Cargamos los shaders y almacenamos sus identificadores para luego enlazarlos a través del programa
 	vshader = loadShader(vname, GL_VERTEX_SHADER);
 	fshader = loadShader(fname, GL_FRAGMENT_SHADER);
 
 	//Inicialización del programa de enlazado
-	program = glCreateProgram();
-	glAttachShader(program, vshader);
-	glAttachShader(program, fshader);
-	glLinkProgram(program);
+	program[program_i] = glCreateProgram();
+	glAttachShader(program[program_i], vshader);
+	glAttachShader(program[program_i], fshader);
+	glLinkProgram(program[program_i]);
 
 	//Comprobamos errores de enlazado del vert shader y el frag shader a través del programa
 	int linked;
-	glGetProgramiv(program, GL_LINK_STATUS, &linked);
+	glGetProgramiv(program[program_i], GL_LINK_STATUS, &linked);
 	if (!linked) {
 		//Calculamos una cadena de error 
 		GLint logLen;
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLen);
+		glGetProgramiv(program[program_i], GL_INFO_LOG_LENGTH, &logLen);
 		char* logString = new char[logLen];
-		glGetProgramInfoLog(program, logLen, NULL, logString);
+		glGetProgramInfoLog(program[program_i], logLen, NULL, logString);
 		std::cout << "Error: " << logString << std::endl;
 		delete[] logString;
-		glDeleteProgram(program);
-		program = 0;
+		glDeleteProgram(program[program_i]);
+		program[program_i] = 0;
 		exit(-1);
 	}
 
@@ -247,25 +253,30 @@ void initShader(const char* vname, const char* fname) {
 	//glBindAttribLocation(program, 3, "inTexCoord");
 
 	//Establecemos variables uniformes y atributos buscándolas en el servidor y en el cliente
-	uNormalMat = glGetUniformLocation(program, "normal");
-	uModelViewMat = glGetUniformLocation(program, "modelView");
-	uModelViewProjMat = glGetUniformLocation(program, "modelViewProj");
-	uModel = glGetUniformLocation(program, "modelViewProj");
-
-	inPos = glGetAttribLocation(program, "inPos");
-	inColor = glGetAttribLocation(program, "inColor");
-	inNormal = glGetAttribLocation(program, "inNormal");
-	inTexCoord = glGetAttribLocation(program, "inTexCoord");
-
-	//Identificadores de las variables uniformes de textura
-	uColorTex = glGetUniformLocation(program, "colorTex");
-	uEmiTex = glGetUniformLocation(program, "emiTex");
-
-	//Identificadores de las variables uniformes de iluminación
-	uLightPosition = glGetUniformLocation(program, "lpos");
-	uLightIntensity = glGetUniformLocation(program, "Id");
+	if (program_i == 0) {
+		uNormalMat[program_i] = glGetUniformLocation(program[program_i], "normal");
+		uModelViewMat[program_i] = glGetUniformLocation(program[program_i], "modelView");
+		uModel[program_i] = glGetUniformLocation(program[program_i], "modelViewProj");
+	}
+	uModelViewProjMat[program_i] = glGetUniformLocation(program[program_i], "modelViewProj");
 
 
+	inPos = glGetAttribLocation(program[program_i], "inPos");
+	inColor = glGetAttribLocation(program[program_i], "inColor");
+	
+	if (program_i == 0) {
+		inNormal = glGetAttribLocation(program[program_i], "inNormal");
+		inTexCoord = glGetAttribLocation(program[program_i], "inTexCoord");
+
+		//Identificadores de las variables uniformes de textura
+		uColorTex[program_i] = glGetUniformLocation(program[program_i], "colorTex");
+		uEmiTex[program_i] = glGetUniformLocation(program[program_i], "emiTex");
+
+		//Identificadores de las variables uniformes de iluminación
+		uLightPosition[program_i] = glGetUniformLocation(program[program_i], "lpos");
+		uLightIntensity[program_i] = glGetUniformLocation(program[program_i], "Id");
+
+	}
 
 }
 
@@ -278,8 +289,8 @@ void initObj() {
 	glGenBuffers(1, &texCoordVBO);
 
 	//Configuración del Vertex Array Object
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	glGenVertexArrays(1, &vao[0]);
+	glBindVertexArray(vao[0]);
 
 	//////////////////////////////////////////////////////	BOX	//////////////////////////////////////////////////////
 	glBindBuffer(GL_ARRAY_BUFFER, posVBO); //Se habilita el Vertex Buffer Object que vamos a configurar a continuación
@@ -314,49 +325,55 @@ void initObj() {
 	model_box2 = glm::mat4(1.0f);
 	model_box3 = glm::mat4(1.0f);
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// 
-	//////////////////////////////////////////////////////	PYRAMID	//////////////////////////////////////////////////////	
-	/*
-	//Configuración de los Vertex Buffer Objects
-	glGenBuffers(1, &posVBO2);
-	glGenBuffers(1, &colorVBO2);
-	glGenBuffers(1, &normalVBO2);
-	glGenBuffers(1, &texCoordVBO2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, posVBO2);
-	glBufferData(GL_ARRAY_BUFFER, pyramidNVertex * sizeof(float) * 3, pyramidVertexPos, GL_STATIC_DRAW);
-	glVertexAttribPointer(inPos, 3, GL_FLOAT, GL_FALSE, 0, 0);  //Se especifica la configuración del VBO
-	if (inPos != -1) glEnableVertexAttribArray(0); //Si no se necesita se desactiva
-
-	glBindBuffer(GL_ARRAY_BUFFER, colorVBO2);
-	glBufferData(GL_ARRAY_BUFFER, pyramidNVertex * sizeof(float) * 3, pyramidVertexColor, GL_STATIC_DRAW);
-	glVertexAttribPointer(inColor, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	if (inColor != -1) glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, normalVBO2);
-	glBufferData(GL_ARRAY_BUFFER, pyramidNVertex * sizeof(float) * 3, pyramidVertexNormal, GL_STATIC_DRAW);
-	glVertexAttribPointer(inNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	if (inNormal != -1) glEnableVertexAttribArray(2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, texCoordVBO2);
-	glBufferData(GL_ARRAY_BUFFER, pyramidNVertex * sizeof(float) * 2, pyramidVertexTexCoord, GL_STATIC_DRAW);
-	glVertexAttribPointer(inTexCoord, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	if (inTexCoord != -1) glEnableVertexAttribArray(3);
-
-	glGenBuffers(1, &triangleIndexVBO2);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangleIndexVBO2);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, pyramidNTriangleIndex * sizeof(unsigned int) * 3, pyramidTriangleIndex, GL_STATIC_DRAW);
-
-	//Inicialización de la matriz model
-	model_pyramid = glm::mat4(1.0f);
-	*/
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-
 	//Creación de texturas
 	colorTexId = loadTex("../img/color2.png");
 	emiTexId = loadTex("../img/emissive.png");
 
+	//Configuración del Vertex Array Object
+	glGenVertexArrays(1, &vao[1]);
+	glBindVertexArray(vao[1]);
+
+	//////////////////////////////////////////////////////	PYRAMID	//////////////////////////////////////////////////////	
+	//Configuración de los Vertex Buffer Objects
+	glGenBuffers(1, &posVBO);
+	glGenBuffers(1, &colorVBO);
+	glGenBuffers(1, &normalVBO);
+	glGenBuffers(1, &texCoordVBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, posVBO);
+	glBufferData(GL_ARRAY_BUFFER, pyramidNVertex * sizeof(float) * 3, pyramidVertexPos, GL_STATIC_DRAW);
+	glVertexAttribPointer(inPos, 3, GL_FLOAT, GL_FALSE, 0, 0);  //Se especifica la configuración del VBO
+	if (inPos != -1) glEnableVertexAttribArray(0); //Si no se necesita se desactiva
+
+	glBindBuffer(GL_ARRAY_BUFFER, colorVBO);
+	glBufferData(GL_ARRAY_BUFFER, pyramidNVertex * sizeof(float) * 3, pyramidVertexColor, GL_STATIC_DRAW);
+	glVertexAttribPointer(inColor, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	if (inColor != -1) glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, normalVBO);
+	glBufferData(GL_ARRAY_BUFFER, pyramidNVertex * sizeof(float) * 3, pyramidVertexNormal, GL_STATIC_DRAW);
+	glVertexAttribPointer(inNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	if (inNormal != -1) glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, texCoordVBO);
+	glBufferData(GL_ARRAY_BUFFER, pyramidNVertex * sizeof(float) * 2, pyramidVertexTexCoord, GL_STATIC_DRAW);
+	glVertexAttribPointer(inTexCoord, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	if (inTexCoord != -1) glEnableVertexAttribArray(3);
+
+	glGenBuffers(1, &triangleIndexVBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangleIndexVBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, pyramidNTriangleIndex * sizeof(unsigned int) * 3, pyramidTriangleIndex, GL_STATIC_DRAW);
+
+	//Inicialización de la matriz model
+	model_pyramid = glm::mat4(1.0f);
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	//Creación de texturas
+	colorTexId = loadTex("../img/color2.png");
+	emiTexId = loadTex("../img/emissive.png");
+	
 }
 
 GLuint loadShader(const char* fileName, GLenum type) {
@@ -428,10 +445,15 @@ void renderFunc() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//Se habilita el programa creado para enlazar el vert shader y el fragment shader
-	glUseProgram(program);
+	//Para el cubo 1, 2 y 3 usamos el program 0
+	//Para la pirámide usamos el program 1
+	glUseProgram(program[0]);
 
-	glViewport(0, 0, w / 2, h);
+	glViewport(0, 0, w, h);
 
+	///////////////////////////////////////////////	BOXs //////////////////////////////////////////////
+
+	glBindVertexArray(vao[0]);
 	///////////////////////////////////////////////	BOX 1 //////////////////////////////////////////////
 	//Se crean las matrices modelView, modelViewProjection y normal
 	glm::mat4 modelView = view * model_box1;
@@ -439,16 +461,15 @@ void renderFunc() {
 	glm::mat4 normal = glm::transpose(glm::inverse(modelView));
 
 	//Si se usan y se encuentran en los shaders las variables uniformes (sus idx son distintos a -1) se suben al cauce
-	if (uModel != -1)
-		glUniformMatrix4fv(uModel, 1, GL_FALSE, &(model_box1[0][0]));
-	if (uModelViewMat != -1)
-		glUniformMatrix4fv(uModelViewMat, 1, GL_FALSE, &(modelView[0][0]));
-	if (uModelViewProjMat != -1)
-		glUniformMatrix4fv(uModelViewProjMat, 1, GL_FALSE, &(modelViewProj[0][0]));
-	if (uNormalMat != -1)
-		glUniformMatrix4fv(uNormalMat, 1, GL_FALSE, &(normal[0][0]));
+	if (uModel[0] != -1)
+		glUniformMatrix4fv(uModel[0], 1, GL_FALSE, &(model_box1[0][0]));
+	if (uModelViewMat[0] != -1)
+		glUniformMatrix4fv(uModelViewMat[0], 1, GL_FALSE, &(modelView[0][0]));
+	if (uModelViewProjMat[0] != -1)
+		glUniformMatrix4fv(uModelViewProjMat[0], 1, GL_FALSE, &(modelViewProj[0][0]));
+	if (uNormalMat[0] != -1)
+		glUniformMatrix4fv(uNormalMat[0], 1, GL_FALSE, &(normal[0][0]));
 
-	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, cubeNTriangleIndex * 3, GL_UNSIGNED_INT, (void*)0);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -460,105 +481,79 @@ void renderFunc() {
 	normal = glm::transpose(glm::inverse(modelView));
 
 	//Si se usan y se encuentran en los shaders las variables uniformes (sus idx son distintos a -1) se suben al cauce
-	if (uModel != -1)
-		glUniformMatrix4fv(uModel, 1, GL_FALSE, &(model_box2[0][0]));
-	if (uModelViewMat != -1)
-		glUniformMatrix4fv(uModelViewMat, 1, GL_FALSE, &(modelView[0][0]));
-	if (uModelViewProjMat != -1)
-		glUniformMatrix4fv(uModelViewProjMat, 1, GL_FALSE, &(modelViewProj[0][0]));
-	if (uNormalMat != -1)
-		glUniformMatrix4fv(uNormalMat, 1, GL_FALSE, &(normal[0][0]));
+	if (uModel[0] != -1)
+		glUniformMatrix4fv(uModel[0], 1, GL_FALSE, &(model_box2[0][0]));
+	if (uModelViewMat[0] != -1)
+		glUniformMatrix4fv(uModelViewMat[0], 1, GL_FALSE, &(modelView[0][0]));
+	if (uModelViewProjMat[0] != -1)
+		glUniformMatrix4fv(uModelViewProjMat[0], 1, GL_FALSE, &(modelViewProj[0][0]));
+	if (uNormalMat[0] != -1)
+		glUniformMatrix4fv(uNormalMat[0], 1, GL_FALSE, &(normal[0][0]));
 
-	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, cubeNTriangleIndex * 3, GL_UNSIGNED_INT, (void*)0);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
-		///////////////////////////////////////////////	BOX 3 //////////////////////////////////////////////
+	///////////////////////////////////////////////	BOX 3 //////////////////////////////////////////////
 	//Se crean las matrices modelView, modelViewProjection y normal
 	modelView = view * model_box3;
 	modelViewProj = proj * modelView;
 	normal = glm::transpose(glm::inverse(modelView));
 
 	//Si se usan y se encuentran en los shaders las variables uniformes (sus idx son distintos a -1) se suben al cauce
-	if (uModel != -1)
-		glUniformMatrix4fv(uModel, 1, GL_FALSE, &(model_box3[0][0]));
-	if (uModelViewMat != -1)
-		glUniformMatrix4fv(uModelViewMat, 1, GL_FALSE, &(modelView[0][0]));
-	if (uModelViewProjMat != -1)
-		glUniformMatrix4fv(uModelViewProjMat, 1, GL_FALSE, &(modelViewProj[0][0]));
-	if (uNormalMat != -1)
-		glUniformMatrix4fv(uNormalMat, 1, GL_FALSE, &(normal[0][0]));
+	if (uModel[0] != -1)
+		glUniformMatrix4fv(uModel[0], 1, GL_FALSE, &(model_box3[0][0]));
+	if (uModelViewMat[0] != -1)
+		glUniformMatrix4fv(uModelViewMat[0], 1, GL_FALSE, &(modelView[0][0]));
+	if (uModelViewProjMat[0] != -1)
+		glUniformMatrix4fv(uModelViewProjMat[0], 1, GL_FALSE, &(modelViewProj[0][0]));
+	if (uNormalMat[0] != -1)
+		glUniformMatrix4fv(uNormalMat[0], 1, GL_FALSE, &(normal[0][0]));
 
-	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, cubeNTriangleIndex * 3, GL_UNSIGNED_INT, (void*)0);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	// 
+
+	if (uLightPosition[0] != -1) {
+		glm::vec4 lightPosition_view = view * glm::vec4(lightPosition, 0.0f);
+		glm::vec3 lightPosition_mv = glm::vec3(lightPosition_view.x, lightPosition_view.y, lightPosition_view.z);
+		glUniform3fv(uLightPosition[0], 1, &(lightPosition_mv[0]));	//Pasamos la posición de la luz en coordenadas del MV
+
+	}
+	if (uLightIntensity[0] != -1)
+		glUniform3fv(uLightIntensity[0], 1, &(lightIntensity[0]));
+
+	//Texturas
+	if (uColorTex[0] != -1)
+	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, colorTexId);
+		glUniform1i(uColorTex[0], 0);
+	}
+	if (uEmiTex[0] != -1)
+	{
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, emiTexId);
+		glUniform1i(uEmiTex[0], 1);
+	}
+
 	///////////////////////////////////////////////	PYRAMID //////////////////////////////////////////////
-	/*
+	glUseProgram(program[1]);
+	glBindVertexArray(vao[1]);
+
 	//Se crean las matrices modelView, modelViewProjection y normal
 	modelView = view * model_pyramid;
 	modelViewProj = proj * modelView;
 	normal = glm::transpose(glm::inverse(modelView));
 
 	//Si se usan y se encuentran en los shaders las variables uniformes (sus idx son distintos a -1) se suben al cauce
-	if (uModel != -1)
-		glUniformMatrix4fv(uModel, 1, GL_FALSE, &(model_pyramid[0][0]));
-	if (uModelViewMat != -1)
-		glUniformMatrix4fv(uModelViewMat, 1, GL_FALSE, &(modelView[0][0]));
-	if (uModelViewProjMat != -1)
-		glUniformMatrix4fv(uModelViewProjMat, 1, GL_FALSE, &(modelViewProj[0][0]));
-	if (uNormalMat != -1)
-		glUniformMatrix4fv(uNormalMat, 1, GL_FALSE, &(normal[0][0]));
+	if (uModelViewProjMat[1] != -1)
+		glUniformMatrix4fv(uModelViewProjMat[1], 1, GL_FALSE, &(modelViewProj[0][0]));
 
-	glBindVertexArray(vao);
+
 	glDrawElements(GL_TRIANGLES, pyramidNTriangleIndex * 3, GL_UNSIGNED_INT, (void*)0);
-	*/
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-
-	glViewport(w / 2, 0, w / 2, h);  //Cada vez que se llama a renderizar se ajusta el viewport
-
-	glm::mat4 v = view;
-	v[3].x += 0.1f;
-	//Se crean las matrices modelView, modelViewProjection y normal
-	modelView = v * model_box1;
-	modelViewProj = proj * modelView;
-	normal = glm::transpose(glm::inverse(modelView));
-
-	//Si se usan y se encuentran en los shaders las variables uniformes (sus idx son distintos a -1) se suben al cauce
-	if (uModelViewMat != -1)
-		glUniformMatrix4fv(uModelViewMat, 1, GL_FALSE, &(modelView[0][0]));
-	if (uModelViewProjMat != -1)
-		glUniformMatrix4fv(uModelViewProjMat, 1, GL_FALSE, &(modelViewProj[0][0]));
-	if (uNormalMat != -1)
-		glUniformMatrix4fv(uNormalMat, 1, GL_FALSE, &(normal[0][0]));
-
-	if (uLightPosition != -1)
-		glUniform3fv(uLightPosition, 1, &(lightPosition[0]));
-	if (uLightIntensity != -1)
-		glUniform3fv(uLightIntensity, 1, &(lightIntensity[0]));
-
-
-	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, cubeNTriangleIndex * 3, GL_UNSIGNED_INT, (void*)0);
-
-	//Texturas
-	if (uColorTex != -1)
-	{
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, colorTexId);
-		glUniform1i(uColorTex, 0);
-	}
-	if (uEmiTex != -1)
-	{
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, emiTexId);
-		glUniform1i(uEmiTex, 1);
-	}
-
-
 
 	glutSwapBuffers();
 
@@ -580,7 +575,6 @@ void resizeFunc(int width, int height) {
 	proj[3].z = 2.0f * n * f / (n - f);
 	
 	glutPostRedisplay();
-
 }
 	
 
@@ -792,22 +786,10 @@ void mouseMotionFunc(int x, int y) {
 	glm::mat4 translate_to_rot_center = glm::translate(actual_camera_state, glm::vec3(movX, 0.0f, movZ));
 	glm::mat4 rotation_from_rot_centerX = glm::rotate(translate_to_rot_center, glm::radians(angleX), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 rotation_from_rot_centerZ = glm::rotate(rotation_from_rot_centerX, glm::radians(angleZ), glm::vec3(1.0f, 0.0f, 0.0f));
-	//glm::mat4 rotation_from_rot_centerZ = glm::rotate(rotation_from_rot_centerX, glm::radians(angleZ), glm::cross(normalized_lookAt, normalized_right));
-	glm::mat4 final_view = glm::translate(rotation_from_rot_centerZ, glm::vec3(-movX, 0.0f, -movZ));
+	glm::mat4 final_view = glm::translate(rotation_from_rot_centerX, glm::vec3(-movX, 0.0f, -movZ));
 
 	view = final_view;
 
 	glutPostRedisplay();
 
 }
-
-
-
-
-
-
-
-
-
-
-
