@@ -25,6 +25,11 @@ const int numObjects = 2;
 const float ORBIT_RADIUS = 10.0f;
 float bezier_t = 0.0f;
 
+//Filtrado anistrópico
+GLfloat fLargest;
+bool anisotropySupported;
+bool useAnisotropy = true;
+
 //Matrices
 glm::mat4	proj = glm::mat4(1.0f);
 glm::mat4	view = glm::mat4(1.0f);
@@ -134,6 +139,20 @@ int main(int argc, char** argv) {
 		}
 
 	}
+
+
+	//Se comprueba si se soporta la extensión del filtro anistrópico
+	anisotropySupported = glewIsSupported("GL_EXT_texture_filter_anisotropic");
+	if (anisotropySupported)
+	{
+		std::cout << "Anisotropic texture filter extension supported." << std::endl;
+		
+		//Se comprueba la cantidad máxima de anistropía soportada		
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+		std::cout << "Max. amount of anisotropy supported: " << fLargest << std::endl;
+	}
+	else
+		std::cout << "Anisotropic texture filter extension NOT supported." << std::endl;
 
 	initObj();
 
@@ -418,11 +437,25 @@ unsigned int loadTex(const char* fileName) {
 	delete[] map;
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-		GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+
+	//Aplicamos filtro anistrópico
+	if(anisotropySupported && useAnisotropy){
+		
+		//Preguntar si existe algo para desactivar un parámetro!!!!!!!!!!!!
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+
+		std::cout << "Anisotropyc filter enabled" << std::endl;
+
+	}
+	else{
+		
+		std::cout << "Anisotropyc filter disabled" << std::endl;
+
+	}
 
 	return texId;
 }
@@ -714,6 +747,17 @@ void keyboardFunc(unsigned char key, int x, int y) {
 
 	case 'E':
 		cameraAlphaY += ALPHA;
+		break;
+
+	case 'f':
+
+		useAnisotropy = !useAnisotropy;
+		
+		//initObj();
+
+		colorTexId = loadTex("../img/color2.png");
+		emiTexId = loadTex("../img/emissive.png");
+
 		break;
 	}
 
